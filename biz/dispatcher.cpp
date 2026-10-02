@@ -76,6 +76,7 @@ void Dispatcher::init_handlers()
     register_handler<Packet::C2S_Disconnect>([this](auto user, const auto& packet) { return handle_disconnect(user, packet); });
     register_handler<Packet::C2S_SetPosition>([this](auto user, const auto& packet) { return handle_set_position(user, packet); });
     register_handler<Packet::C2S_Move>([this](auto user, const auto& packet) { return handle_move(user, packet); });
+    register_handler<Packet::C2S_Attack>([this](auto user, const auto& packet) { return handle_attack(user, packet); });
 }
 
 Error Dispatcher::handle_connect(std::shared_ptr<User> user, const Packet::C2S_Connect& packet)
@@ -158,6 +159,16 @@ Error Dispatcher::handle_move(std::shared_ptr<User> user, const Packet::C2S_Move
     send_packet.facing_right = packet.facing_right;
 
     world_->broadcast(send_packet);
+
+    return Error::None;
+}
+
+Error Dispatcher::handle_attack(std::shared_ptr<User> user, [[ maybe_unused ]] const Packet::C2S_Attack& packet)
+{
+    Packet::S2C_Attack send_packet;
+    send_packet.userid = user->get_user_id();
+
+    world_->broadcast_except_user(send_packet, user);
 
     return Error::None;
 }
